@@ -82,6 +82,22 @@ not run as part of HACS. Do not run two receivers for the same camera while
 migrating from an older setup; disable the old reader before testing the new
 one. Keep your working setup as a rollback until live testing is complete.
 
+## Accounts using Sign in with Apple
+
+A user-reported workaround is to share the camera with a second UBox account
+that uses an email address and password:
+
+1. Create a separate UBox account with email/password login.
+2. In the original Apple-linked UBox account, share the camera with that account.
+3. Accept the invitation and confirm that the camera is visible in the second account.
+4. In Home Assistant, choose **UBox Relay → Sign in to UBox account** and use the
+   second account's email address and password.
+
+For this integration, the shared camera must expose the required device
+credentials through the vendor API. Restricted shares without those credentials
+are not available for selection. This shared-account workaround has not yet
+been independently verified with the integration.
+
 ## Add the camera in go2rtc
 
 1. In HA's developer **Actions**, choose **UBox Relay: Get stream URL**.
