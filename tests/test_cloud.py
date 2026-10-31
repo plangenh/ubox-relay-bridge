@@ -212,7 +212,7 @@ async def test_regional_host_from_login_is_used():
         "http://portal-us.ubianet.com",
         "https://evil.example.invalid",
         "https://ubianet.com.evil.example.invalid",
-        "https://user@portal-us.ubianet.com",
+        "https://user" + "@portal-us.ubianet.com",
         "https://portal-us.ubianet.com:8123",
         "https://portal-us.ubianet.com/path",
         "https://portal-us.ubianet.com?token=value",

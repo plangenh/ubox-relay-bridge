@@ -81,7 +81,15 @@ for name in filter(None, FILES):
     count += 1
     for number, line in enumerate(data.splitlines(), 1):
         for label, pattern in RULES.items():
-            if pattern.search(line):
+            matches = list(pattern.finditer(line))
+            if label == "email address":
+                # Reserved testing domains cannot identify a real mailbox.
+                matches = [
+                    match
+                    for match in matches
+                    if not match.group().lower().endswith((".invalid", ".test"))
+                ]
+            if matches:
                 issues.append((name, number, label))
         for match in IPV4.finditer(line):
             try:
