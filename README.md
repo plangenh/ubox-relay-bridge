@@ -1,6 +1,6 @@
 # UBox Relay for Home Assistant and go2rtc
 
-**Development version:** a HACS custom integration that receives an authorized
+**Development version 0.2.0 beta:** a HACS custom integration that receives an authorized
 UBox/Ubia camera directly inside Home Assistant. No separate Go binary,
 previous `ubox_p4p` integration or go2rtc add-on is needed for reception.
 
@@ -30,8 +30,8 @@ camera. Rotation revokes old URLs and disconnects existing exported streams.
 
 - Home Assistant 2026.10 or newer, with working FFmpeg (included with HA OS/
   the official HA container; custom Core installations need FFmpeg installed).
-- Camera device UID and **device password**, not the UBox account password.
-  Account login and credential discovery are not included in this version.
+- A UBox email/password account for camera discovery, or camera device UID
+  and **device password** for manual setup. Direct Apple sign-in is not supported.
 - Network access to the vendor relays; this is not a cloud-independent solution.
 - go2rtc is optional for external distribution, not required for the HA camera.
 
@@ -53,8 +53,23 @@ After publication and merge to the default branch:
 1. In HACS, add this repository as a custom repository, category **Integration**.
 2. Download **UBox Relay** and restart Home Assistant.
 3. Add **UBox Relay** in **Settings → Devices & services → Add integration**.
-4. Enter a camera name, UID and device password. Relay override is optional.
+4. Choose **Sign in to UBox account**, enter your email and account password,
+   then select a camera by name. Alternatively choose manual device credentials.
+   An optional name overrides the selected camera name; relay override is optional.
 5. Open the created camera to view it in HA.
+
+Account discovery signs in once over verified HTTPS and fetches the camera list.
+The account password and session token are discarded after discovery. Only the
+selected device UID/password and camera name are saved in the HA config entry.
+Repeat Add integration to add another camera. Existing manual entries continue
+working; selecting an already configured camera is rejected as a duplicate.
+Shared/restricted cameras without device credentials cannot be added.
+
+The account path is a beta based on the installed UBox Pro 1.1.30 request/model
+contract. Offline tests cover the HTTP request and response handling, but a
+successful account login and camera discovery still require a live verification.
+If the vendor changes its API or requires interactive verification, use manual
+setup. The integration does not enroll push notifications or poll the account.
 
 The Go receiver at the root is retained as a standalone reference and does
 not run as part of HACS. Do not run two receivers for the same camera while

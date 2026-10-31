@@ -31,3 +31,29 @@ device discovery, audio and battery telemetry are not implemented.
 
 Automated protocol tests use synthetic data. No vendor app, disassembly,
 captured video, device identifier or packet capture is distributed.
+
+## Account discovery (0.2 beta)
+
+The installed UBox Pro 1.1.30 constructs a LoginV3 request at
+`/api/pub/account/login/v3` with an account and password-derived value. Native
+`Utilities.hmacsha1:secret:` uses HMAC-SHA1 with an empty key and the UTF-8
+password as the message; its Base64 output substitutes `+`, `/`, `=` with `-`,
+`_`, `,`. This is vendor compatibility, not a password storage scheme.
+
+The login success path passes reply `Token` and `uuid` unmodified into its API
+context. Subsequent calls use `X-Ubia-Auth-UserToken` and a URL-encoded
+`X-UbiaAPI-CallContext`. The current camera endpoint is
+`/api/user/qry/device/list/v2`, whose reply `data.infos` is an array of
+DeviceInfoV2 records containing `device_uid`, `device_name`, `device_user` and
+`device_pwd`. This differs from the older device-list endpoint found in strings.
+
+The account path is not required for ongoing reception. Tokens and account
+credentials are transient; only a selected device's reception credentials are
+retained. Static request/model analysis and bounded unauthenticated validation
+responses establish the current contract; successful account authentication
+still requires a live user-owned account check.
+
+The native login success path updates the service host from `svcloc.api_dn`;
+outside China its default is `https://portal-uni.ubianet.com`. The integration
+restricts any returned host to the Ubia HTTPS domain and never follows redirects.
+A malformed or off-domain host is rejected before any session token is sent.

@@ -28,3 +28,9 @@ the camera. Keep it out of screenshots, logs and public go2rtc configuration.
 Only administrators can generate or rotate it using the integration actions.
 Rotating the token invalidates the old URL and disconnects active exports.
 Diagnostics deliberately omit device identifiers, credentials and stream URLs.
+
+Account discovery uses the vendor HTTPS API only while configuring a camera.
+Account passwords, password-derived login values, session tokens and full server
+responses must not be persisted in config entries, diagnostics, logs or fixtures.
+Device credentials from the selected camera remain sensitive stored configuration.
+The discovery client disables redirects and bounds response size and duration.

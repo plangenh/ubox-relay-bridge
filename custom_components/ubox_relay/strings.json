@@ -2,7 +2,7 @@
   "title": "UBox Camera",
   "config": {
     "step": {
-      "user": {
+      "manual": {
         "title": "Connect a UBox camera",
         "description": "Enter the device credentials. Setup validates the entries locally and does not wake the camera. Leave the relay host blank to use automatic relay selection.",
         "data": {
@@ -11,16 +11,46 @@
           "password": "Device password",
           "relay_host": "Relay host (optional)"
         }
+      },
+      "user": {
+        "title": "Set up a UBox camera",
+        "menu_options": {
+          "account": "Sign in to UBox account",
+          "manual": "Enter device credentials manually"
+        }
+      },
+      "account": {
+        "title": "UBox account",
+        "description": "Sign in with your UBox email address and UBox password. Account credentials are used only to discover cameras and are not saved. Direct Sign in with Apple is not supported.",
+        "data": {
+          "email": "UBox email address",
+          "password": "UBox account password"
+        }
+      },
+      "camera": {
+        "title": "Select a camera",
+        "description": "Choose a camera. Leave the name blank to use its camera name, and the relay host blank for automatic relay selection.",
+        "data": {
+          "device": "Camera",
+          "name": "Name (optional)",
+          "relay_host": "Relay host (optional)"
+        }
       }
     },
     "error": {
       "invalid_name": "Enter a name.",
       "invalid_uid": "Enter a camera UID containing 1–20 printable ASCII characters.",
       "invalid_password": "Enter a device password containing 1–20 printable ASCII characters.",
-      "invalid_relay_host": "Enter a hostname or IPv4 address, optionally followed by a port (1–65535)."
+      "invalid_relay_host": "Enter a hostname or IPv4 address, optionally followed by a port (1–65535).",
+      "invalid_auth": "UBox rejected the login. Check the account credentials.",
+      "cannot_connect": "Unable to reach UBox. Try again later.",
+      "invalid_response": "UBox did not return usable camera credentials.",
+      "challenge_required": "UBox requires additional verification. Sign in using the UBox app first or use manual setup.",
+      "invalid_device": "Choose a camera from the list."
     },
     "abort": {
-      "already_configured": "This camera is already configured."
+      "already_configured": "This camera is already configured.",
+      "no_devices": "No compatible cameras were found in the UBox account."
     }
   },
   "options": {

@@ -11,7 +11,7 @@ async def async_get_config_entry_diagnostics(
     runtime = getattr(entry, "runtime_data", None)
     stats = runtime.manager.diagnostics if runtime else {}
     return {
-        "version": "0.1.0",
+        "version": "0.2.0b1",
         "transport_started": runtime is not None
         and runtime.manager.stream_url is not None,
         "counters": {

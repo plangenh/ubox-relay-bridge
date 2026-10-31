@@ -2,7 +2,7 @@
   "title": "UBox-Kamera",
   "config": {
     "step": {
-      "user": {
+      "manual": {
         "title": "UBox-Kamera verbinden",
         "description": "Gib die Geräte-Zugangsdaten ein. Die Einrichtung prüft die Eingaben lokal und weckt die Kamera nicht auf. Ein leeres Relay-Feld verwendet die automatische Auswahl.",
         "data": {
@@ -11,16 +11,46 @@
           "password": "Gerätepasswort",
           "relay_host": "Relay-Host (optional)"
         }
+      },
+      "user": {
+        "title": "UBox-Kamera einrichten",
+        "menu_options": {
+          "account": "Mit UBox-Konto anmelden",
+          "manual": "Geräte-Zugangsdaten manuell eingeben"
+        }
+      },
+      "account": {
+        "title": "UBox-Konto",
+        "description": "Melde dich mit deiner UBox-E-Mail-Adresse und dem UBox-Passwort an. Die Kontodaten werden nur zur Kameraauswahl verwendet und nicht gespeichert. Eine direkte Anmeldung mit Apple wird nicht unterstützt.",
+        "data": {
+          "email": "UBox-E-Mail-Adresse",
+          "password": "UBox-Kontopasswort"
+        }
+      },
+      "camera": {
+        "title": "Kamera auswählen",
+        "description": "Wähle eine Kamera aus. Ein leerer Name übernimmt den Kameranamen; ein leerer Relay-Host verwendet die automatische Auswahl.",
+        "data": {
+          "device": "Kamera",
+          "name": "Name (optional)",
+          "relay_host": "Relay-Host (optional)"
+        }
       }
     },
     "error": {
       "invalid_name": "Gib einen Namen ein.",
       "invalid_uid": "Die Kamera-UID muss 1–20 druckbare ASCII-Zeichen enthalten.",
       "invalid_password": "Das Gerätepasswort muss 1–20 druckbare ASCII-Zeichen enthalten.",
-      "invalid_relay_host": "Gib einen Hostnamen oder eine IPv4-Adresse ein, optional mit Port (1–65535)."
+      "invalid_relay_host": "Gib einen Hostnamen oder eine IPv4-Adresse ein, optional mit Port (1–65535).",
+      "invalid_auth": "Die UBox-Anmeldung wurde abgelehnt. Prüfe die Kontodaten.",
+      "cannot_connect": "UBox ist nicht erreichbar. Versuche es später erneut.",
+      "invalid_response": "UBox hat keine verwendbaren Kamera-Zugangsdaten geliefert.",
+      "challenge_required": "UBox verlangt eine zusätzliche Bestätigung. Melde dich zunächst in der UBox-App an oder verwende die manuelle Einrichtung.",
+      "invalid_device": "Wähle eine Kamera aus der Liste aus."
     },
     "abort": {
-      "already_configured": "Diese Kamera ist bereits eingerichtet."
+      "already_configured": "Diese Kamera ist bereits eingerichtet.",
+      "no_devices": "Im UBox-Konto wurden keine kompatiblen Kameras gefunden."
     }
   },
   "options": {
