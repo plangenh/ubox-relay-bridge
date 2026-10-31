@@ -84,19 +84,18 @@ one. Keep your working setup as a rollback until live testing is complete.
 
 ## Accounts using Sign in with Apple
 
-A user-reported workaround is to share the camera with a second UBox account
-that uses an email address and password:
+A user-reported workaround is to add a second UBox account as a camera
+**administrator**, then use that account's email/password login in Home Assistant:
 
 1. Create a separate UBox account with email/password login.
-2. In the original Apple-linked UBox account, share the camera with that account.
-3. Accept the invitation and confirm that the camera is visible in the second account.
-4. In Home Assistant, choose **UBox Relay → Sign in to UBox account** and use the
-   second account's email address and password.
+2. From the original Apple-linked account, add the second account as an
+   **administrator** for the camera in UBox. A normal restricted share is insufficient.
+3. Accept the administrator invitation and confirm camera access in the second account.
+4. In Home Assistant, choose **UBox Relay → Sign in to UBox account** and enter
+   the second account's email address and password, then select the camera.
 
-For this integration, the shared camera must expose the required device
-credentials through the vendor API. Restricted shares without those credentials
-are not available for selection. This shared-account workaround has not yet
-been independently verified with the integration.
+The administrator role is essential for this workaround. This flow has been
+reported by a user and has not yet been independently verified with the integration.
 
 ## Add the camera in go2rtc
 
