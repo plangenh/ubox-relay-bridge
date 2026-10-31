@@ -1,0 +1,5 @@
+# Merge into your own go2rtc configuration; do not overwrite existing streams.
+# Paths are inside the go2rtc process/container. Replace the entry ID.
+streams:
+  camera_raw: "exec:/config/ubox-relay-bridge --native-handshake --config-root /config --entry-id REPLACE_WITH_ENTRY_ID#killsignal=15#killtimeout=3"
+  camera_h264: "ffmpeg:camera_raw#video=h264#timeout=75"

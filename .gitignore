@@ -1,0 +1,47 @@
+# Local settings and credentials
+.env
+.env.*
+!.env.example
+.storage/
+core.config_entries
+secrets.*
+credentials*
+go2rtc.yaml
+configuration.yaml
+*.local.*
+
+# Camera media, captures, and diagnostics
+*.h264
+*.h265
+*.hevc
+*.mp4
+*.mkv
+*.ts
+*.jpg
+*.jpeg
+*.png
+*.pcap
+*.pcapng
+*.har
+*.rdt
+*.log
+*.m3u
+!*.example.m3u
+stats*.json
+*-result*.json
+
+# Builds, packages and host files
+/bin/
+/dist/
+/ubox-relay-bridge
+*.exe
+*.zip
+*.tar.gz
+*.arm64.bin
+*.ipa
+*.apk
+*.dmg
+.DS_Store
+.venv/
+__pycache__/
+*.pyc

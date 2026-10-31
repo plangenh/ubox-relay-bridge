@@ -1,0 +1,4 @@
+#EXTM3U
+# Replace the reserved example hostname with your receiving host.
+#EXTINF:-1 group-title="Cameras",Camera
+http://go2rtc.example.invalid:1984/api/stream.m3u8?src=camera_h264
