@@ -1,6 +1,6 @@
 # UBox Relay for Home Assistant and go2rtc
 
-**Development version 0.2.0 beta:** a HACS custom integration that receives an authorized
+**Version 0.2.0:** a HACS custom integration that receives an authorized
 UBox/Ubia camera directly inside Home Assistant. No separate Go binary,
 previous `ubox_p4p` integration or go2rtc add-on is needed for reception.
 
@@ -43,12 +43,10 @@ Cold starts can take several seconds and the first snapshot may need a retry.
 
 ## Installation
 
-HACS can use only public repositories. While this development repository is
-private, use the reviewed integration ZIP or copy `custom_components/ubox_relay`
-into your own `config/custom_components/` directory for testing. Restart HA
-once after installing the integration's code.
-
-After publication and merge to the default branch:
+Install from this public GitHub repository as a custom HACS repository.
+The project is not listed in the default HACS catalog. For manual installation,
+extract the release ZIP into your HA configuration directory so that
+`custom_components/ubox_relay` is present, then restart HA.
 
 1. In HACS, add this repository as a custom repository, category **Integration**.
 2. Download **UBox Relay** and restart Home Assistant.
@@ -65,9 +63,10 @@ Repeat Add integration to add another camera. Existing manual entries continue
 working; selecting an already configured camera is rejected as a duplicate.
 Shared/restricted cameras without device credentials cannot be added.
 
-The account path is a beta based on the installed UBox Pro 1.1.30 request/model
-contract. Offline tests cover the HTTP request and response handling, but a
-successful account login and camera discovery still require a live verification.
+The account path follows the observed UBox Pro 1.1.30 request/model contract.
+A live account test confirmed login and camera selection through the verified
+HTTPS login-gateway fallback. Offline tests cover request/response handling,
+secret non-persistence and rejection of untrusted token destinations.
 If the vendor changes its API or requires interactive verification, use manual
 setup. The integration does not enroll push notifications or poll the account.
 
@@ -121,9 +120,12 @@ python scripts/check_privacy.py
 Tests cover the native packet formats/CRC, cancellation and bounds, shared
 FFmpeg lifecycle, HA configuration/options, export authorization and token
 rotation. Synthetic FFmpeg smoke tests can run with `UBOX_TEST_FFMPEG=ffmpeg`.
-Automated tests do not connect to a real camera. The Python integration must
-still be tested on the target HA installation before replacing a working
-production receiver.
+The 125 automated tests do not contact a real camera or account. Separate live
+checks on one HA OS installation confirmed snapshots, HA HLS, protected MPEG-TS
+export and H.264/MP4 output through go2rtc. A later account check confirmed the
+camera-selection screen. These checks do not establish long-term reliability
+or compatibility with other camera firmware. Validate on your own installation
+before replacing a working receiver.
 
 A separate bounded hardware check of the Python receiver delivered 229 video
 units in a 20-second run, with 719 valid media CRCs and no mismatch. That check

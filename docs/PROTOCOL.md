@@ -32,7 +32,7 @@ device discovery, audio and battery telemetry are not implemented.
 Automated protocol tests use synthetic data. No vendor app, disassembly,
 captured video, device identifier or packet capture is distributed.
 
-## Account discovery (0.2 beta)
+## Account discovery (0.2)
 
 The installed UBox Pro 1.1.30 constructs a LoginV3 request at
 `/api/pub/account/login/v3` with an account and password-derived value. Native
@@ -50,8 +50,8 @@ DeviceInfoV2 records containing `device_uid`, `device_name`, `device_user` and
 The account path is not required for ongoing reception. Tokens and account
 credentials are transient; only a selected device's reception credentials are
 retained. Static request/model analysis and bounded unauthenticated validation
-responses establish the current contract; successful account authentication
-still requires a live user-owned account check.
+responses corroborate the current contract. A live account check subsequently
+confirmed authentication and camera selection via the verified login gateway.
 
 The native login success path updates the service host from `svcloc.api_dn`;
 outside China its default is `https://portal-uni.ubianet.com`. The integration
