@@ -4,6 +4,13 @@
 UBox/Ubia camera directly inside Home Assistant. No separate Go binary,
 previous `ubox_p4p` integration or go2rtc add-on is needed for reception.
 
+[![Open UBox Relay in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=plangenh&repository=ubox-relay-bridge&category=integration)
+[![Set up UBox Relay in Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ubox_relay)
+
+First open the repository in HACS and download UBox Relay. Restart Home Assistant,
+then use the second button to start camera setup. My Home Assistant may first ask
+for your own instance address. HACS must already be installed.
+
 Configure the camera in Home Assistant, then copy its protected stream URL
 into go2rtc. go2rtc remains available for distribution, browser playback,
 RTSP, HLS and IPTV players such as APTV.
