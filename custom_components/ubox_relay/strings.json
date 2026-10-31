@@ -1,0 +1,74 @@
+{
+  "title": "UBox Camera",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect a UBox camera",
+        "description": "Enter the device credentials. Setup validates the entries locally and does not wake the camera. Leave the relay host blank to use automatic relay selection.",
+        "data": {
+          "name": "Name",
+          "uid": "Camera UID",
+          "password": "Device password",
+          "relay_host": "Relay host (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Enter a name.",
+      "invalid_uid": "Enter a camera UID containing 1–20 printable ASCII characters.",
+      "invalid_password": "Enter a device password containing 1–20 printable ASCII characters.",
+      "invalid_relay_host": "Enter a hostname or IPv4 address, optionally followed by a port (1–65535)."
+    },
+    "abort": {
+      "already_configured": "This camera is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Camera settings",
+        "description": "Leave the password blank to keep the saved password. Clear the relay host to restore automatic relay selection.",
+        "data": {
+          "name": "Name",
+          "password": "New device password (optional)",
+          "relay_host": "Relay host (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Enter a name.",
+      "invalid_password": "Enter a device password containing 1–20 printable ASCII characters.",
+      "invalid_relay_host": "Enter a hostname or IPv4 address, optionally followed by a port (1–65535)."
+    }
+  },
+  "services": {
+    "get_stream_url": {
+      "name": "Get stream URL",
+      "description": "Return the protected MPEG-TS URL for an administrator to add to go2rtc.",
+      "fields": {
+        "entry_id": {
+          "name": "Camera",
+          "description": "Configuration entry for the UBox camera."
+        },
+        "base_url": {
+          "name": "Home Assistant base URL",
+          "description": "Optional Home Assistant address reachable by go2rtc, without a path."
+        }
+      }
+    },
+    "rotate_stream_token": {
+      "name": "Rotate stream token",
+      "description": "Revoke the old URL, disconnect active exported streams and return a new URL. Update the source in go2rtc afterwards.",
+      "fields": {
+        "entry_id": {
+          "name": "Camera",
+          "description": "Configuration entry for the UBox camera."
+        },
+        "base_url": {
+          "name": "Home Assistant base URL",
+          "description": "Optional Home Assistant address reachable by go2rtc, without a path."
+        }
+      }
+    }
+  }
+}

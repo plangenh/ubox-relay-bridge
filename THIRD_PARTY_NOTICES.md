@@ -10,7 +10,9 @@ This Go implementation derives its legacy packet transform, relay packet
 construction, initial control commands and parts of its receive framing from
 the upstream MIT-licensed protocol implementation, via an intermediate Python
 Home Assistant adaptation. Those portions are principally in `crypto.go`,
-`main.go` and `kcp.go`. The intermediate Python files are not distributed.
+`main.go` and `kcp.go`. The intermediate Python files are not distributed. The HACS receiver in
+`custom_components/ubox_relay/protocol.py` is a native-protocol port of this
+Go implementation and retains the same upstream attribution.
 
 Changes include continuous KCP ACK/reordering/window handling, bounded resource
 use, cancellation/logout, native handshake correlation, corrected packet

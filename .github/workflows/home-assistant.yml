@@ -1,0 +1,55 @@
+name: Home Assistant
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+          cache: pip
+      - name: FFmpeg and JPEG test libraries
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg0
+      - name: Test dependencies
+        run: python -m pip install -r requirements-test.txt
+      - name: Lint
+        run: |
+          ruff check custom_components tests scripts
+          ruff format --check custom_components tests scripts
+      - name: Offline HA and synthetic media tests
+        env:
+          UBOX_TEST_FFMPEG: ffmpeg
+        run: python -m pytest
+      - name: Privacy check
+        run: python scripts/check_privacy.py
+  hassfest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361
+  hacs:
+    # HACS cannot install private repositories. Validate again on publication.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa
+        with:
+          category: integration

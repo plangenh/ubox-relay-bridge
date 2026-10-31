@@ -1,0 +1,6 @@
+pytest-homeassistant-custom-component==0.13.375
+ha-ffmpeg==3.2.2
+PyTurboJPEG==1.8.3
+av==19.0.0
+numpy==2.3.2
+ruff==0.14.2

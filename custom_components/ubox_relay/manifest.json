@@ -1,0 +1,13 @@
+{
+  "domain": "ubox_relay",
+  "name": "UBox Relay",
+  "codeowners": ["@plangenh"],
+  "config_flow": true,
+  "dependencies": ["ffmpeg", "stream"],
+  "documentation": "https://github.com/plangenh/ubox-relay-bridge",
+  "integration_type": "device",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/plangenh/ubox-relay-bridge/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

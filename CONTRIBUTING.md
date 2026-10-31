@@ -5,7 +5,13 @@ changes. Use synthetic UIDs, passwords and packet fixtures. Use RFC 5737
 documentation addresses when an address is needed in a test. Never submit
 captures or recordings from an actual camera.
 
-Run from the repository root:
+For the HACS integration, use Python 3.14 and install `requirements-test.txt`.
+Run `ruff check custom_components tests scripts` and `pytest`. Set
+`UBOX_TEST_FFMPEG` to a local FFmpeg executable to include transcoding tests.
+The Home Assistant workflow also runs hassfest. HACS validation runs when the
+repository is public, because HACS does not support private repositories.
+
+For the standalone Go receiver, run from the repository root:
 
 ```sh
 gofmt -w *.go

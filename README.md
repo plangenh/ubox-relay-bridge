@@ -1,147 +1,138 @@
-# UBox Relay Bridge
+# UBox Relay for Home Assistant and go2rtc
 
-Experimental Go receiver for video from an authorized UBox/Ubia camera. It
-receives HEVC through the vendor's P4P relay protocol and writes raw video to
-stdout. go2rtc can expose that video as RTSP, HLS or HTTP MP4 and transcode it
-to H.264 for Home Assistant and other players.
+**Development version:** a HACS custom integration that receives an authorized
+UBox/Ubia camera directly inside Home Assistant. No separate Go binary,
+previous `ubox_p4p` integration or go2rtc add-on is needed for reception.
 
-This is an independent interoperability project. It is not affiliated with
-UBox or Ubia and does not include vendor binaries, firmware or app packages.
+Configure the camera in Home Assistant, then copy its protected stream URL
+into go2rtc. go2rtc remains available for distribution, browser playback,
+RTSP, HLS and IPTV players such as APTV.
 
-## Scope
-
-- Standard-library-only Go implementation.
-- Native relay handshake with request/session correlation.
-- Receive-side KCP ACKs, ordering, duplicate handling and bounded buffers.
-- Correct wire-transform handling for partial blocks.
-- Native media CRC checks; corrupted media frames are discarded.
-- Bounded retries and signal-triggered logout.
-- No account password or camera credentials in command-line arguments.
-
-This is **not** a Home Assistant add-on or HACS integration. The current
-credential adapter expects an existing `ubox_p4p` Home Assistant config entry
-containing `data.uid` and `data.password`. That integration and account/device
-discovery are not included. There is no standalone credentials-file adapter.
-Do not edit a running Home Assistant instance's `.storage` files to create
-an entry.
-
-The receiver still depends on vendor relays and network access. It is not a
-cloud-independent camera interface. Relay endpoints may change, and devices
-or firmware versions may use different protocol variants.
-
-## Build and test
-
-Go 1.22 or later is required. Development validation used Go 1.27.3.
-
-```sh
-go test ./...
-go test -race ./...
-go vet ./...
-mkdir -p bin
-go build -trimpath -ldflags='-s -w' -o bin/ubox-relay-bridge .
-```
-
-Cross-compile for a Linux ARM64 host:
-
-```sh
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build \
-  -trimpath -ldflags='-s -w' -o bin/ubox-relay-bridge-linux-arm64 .
-```
-
-## Receive video
-
-Install the matching binary on the receiving host. The process must be able
-to read the Home Assistant config directory. Select exactly one existing
-camera by config entry ID or by its exact, unique title:
-
-```sh
-./bin/ubox-relay-bridge --native-handshake \
-  --config-root /config --entry-id REPLACE_WITH_ENTRY_ID > video.h265
-```
-
-`--native-handshake` is required for the validated deployment path. Without
-it, the program retains an older experimental handshake for comparison.
-
-Useful options:
-
-| Option | Purpose |
-| --- | --- |
-| `--duration 30s` | Bound the whole session, including handshake and retries |
-| `--initial-timeout 15s` | Maximum initial wait for video |
-| `--inactivity-timeout 10s` | Maximum gap after video has started |
-| `--stats-file PATH` | Save aggregate diagnostic counters |
-| `--relay HOST[:PORT]` | Restrict relay selection |
-| `--local-ip IPv4` | Override the advertised local address |
-
-Stdout is video only. Stderr contains fixed error codes and aggregate counters.
-SIGINT/SIGTERM trigger best-effort relay logout. A battery camera can take
-several seconds to wake up; the first preview request can time out.
-
-## go2rtc and Home Assistant
-
-See [examples/go2rtc.example.yaml](examples/go2rtc.example.yaml). Merge the two
-example streams into your own configuration, replace the entry ID, and set
-the executable/config paths for the go2rtc container. Preserve any existing
-streams. The host needs FFmpeg for the H.264 conversion.
-
-The example exposes:
+## What runs where
 
 ```text
-rtsp://go2rtc.example.invalid:8554/camera_h264
-http://go2rtc.example.invalid:1984/api/stream.mp4?src=camera_h264
-http://go2rtc.example.invalid:1984/api/stream.m3u8?src=camera_h264
+UBox camera → vendor P4P relay → HACS integration → protected MPEG-TS URL → go2rtc
+                                          └→ Home Assistant camera
 ```
 
-Replace `go2rtc.example.invalid` with your receiving host's reachable name or
-address. In Home Assistant, add a **Generic Camera** with the HTTP MP4 URL as
-its stream source. An HTTP source can avoid the short RTSP startup timeout
-of Home Assistant's internal Generic Camera media helper. Preview timeouts
-can still occur while the camera wakes up.
+The integration uses Python and Home Assistant's FFmpeg. One on-demand
+receiver/transcoder is shared by viewers and snapshots. It stops after the
+last subscriber and an idle grace period. It does not poll battery cameras
+continually or create a permanent viewing session.
 
-For APTV or another M3U player, edit and import
-[examples/camera.example.m3u](examples/camera.example.m3u). A browser player
-page is not a media playlist. Keep streams on a trusted LAN or private VPN;
-these examples do not configure HTTPS, player authentication or public access.
+Device UID and device password are stored in HA's config entry. The exported
+URL contains an independent random access token, not those credentials.
+Only HA administrators can retrieve or rotate that URL. Treat the URL as a
+camera password: anyone who can reach HA and knows the URL can view that
+camera. Rotation revokes old URLs and disconnects existing exported streams.
 
-Keep the source `ubox_p4p` entry because the bridge reads its credentials.
-Concurrent polling by another camera receiver can interfere with a session.
+## Requirements and current limits
 
-## Validation and limits
+- Home Assistant 2026.10 or newer, with working FFmpeg (included with HA OS/
+  the official HA container; custom Core installations need FFmpeg installed).
+- Camera device UID and **device password**, not the UBox account password.
+  Account login and credential discovery are not included in this version.
+- Network access to the vendor relays; this is not a cloud-independent solution.
+- go2rtc is optional for external distribution, not required for the HA camera.
 
-The protocol path was checked against UBox Pro 1.1.30 and tested with an
-authorized XG-S20-EU4G camera. A bounded test delivered 60 seconds of H.264
-at 640 × 360 / approximately 15 fps; 3,079 media frames passed the native
-CRC check. Reconnection, a Home Assistant image, and a Home Assistant HLS
-segment were also checked. These are single-device observations, not a
-compatibility or 24/7 reliability guarantee.
+The established protocol variant was observed with an XG-S20-EU4G camera.
+Other firmware/devices are not guaranteed. Audio, PTZ, recording playback
+and battery telemetry are not implemented. Setup validates inputs locally;
+it does not wake the camera. A connection is attempted when viewing starts.
+Cold starts can take several seconds and the first snapshot may need a retry.
 
-Audio output, battery telemetry, PTZ, recording playback and account login
-are not implemented. Automated tests are offline and use synthetic data;
-they never connect to a camera or the vendor's servers.
+## Installation
 
-## Privacy and contributions
+HACS can use only public repositories. While this development repository is
+private, use the reviewed integration ZIP or copy `custom_components/ubox_relay`
+into your own `config/custom_components/` directory for testing. Restart HA
+once after installing the integration's code.
 
-No personal camera names, account credentials, device IDs, private network
-addresses, recordings or investigation captures are distributed here.
-`golden.json` and test credentials are synthetic. Vendor relay addresses
-and the fixed legacy wire-transform constant are protocol data, not user
-credentials. The legacy transform is not modern authenticated encryption.
+After publication and merge to the default branch:
 
-Do not upload your HA configuration, logs, media or packet captures in an
-issue. See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
-Run the tracked-file privacy check before publishing:
+1. In HACS, add this repository as a custom repository, category **Integration**.
+2. Download **UBox Relay** and restart Home Assistant.
+3. Add **UBox Relay** in **Settings → Devices & services → Add integration**.
+4. Enter a camera name, UID and device password. Relay override is optional.
+5. Open the created camera to view it in HA.
+
+The Go receiver at the root is retained as a standalone reference and does
+not run as part of HACS. Do not run two receivers for the same camera while
+migrating from an older setup; disable the old reader before testing the new
+one. Keep your working setup as a rollback until live testing is complete.
+
+## Add the camera in go2rtc
+
+1. In HA's developer **Actions**, choose **UBox Relay: Get stream URL**.
+2. Select the camera's configuration entry. Optionally enter the HA base URL
+   that go2rtc can reach (for example a LAN/private-VPN hostname).
+3. Execute the action with response enabled and copy `stream_url` from its
+   response. It is deliberately not exposed in ordinary entity attributes.
+4. In go2rtc, add that HTTP URL as a new stream source, or insert it in YAML:
+
+```yaml
+streams:
+  ubox_camera: "http://homeassistant.example.invalid:8123/api/ubox_relay/REPLACE_ENTRY_ID/stream.ts?token=REPLACE_TOKEN"
+```
+
+Use the actual URL returned by HA. The example host and placeholders are
+intentionally unusable. The source is already H.264 video in MPEG-TS, so
+another transcode is normally unnecessary. Use your existing go2rtc player,
+RTSP or HLS outputs as usual. This is a standard HTTP source and does not
+require a custom go2rtc binary, an `exec:` source or its command permissions.
+
+To invalidate a copied/leaked URL, run **UBox Relay: Rotate stream token** and
+update the source in go2rtc with the new response. Changing the device password
+in the integration's options reconnects the receiver. Removing the integration
+also removes the exported stream and stops its worker.
+
+The exported endpoint is available through HA's normal HTTP server. It
+requires the URL token even though go2rtc is not logged into HA. Prefer a
+trusted LAN or private VPN; this project does not configure public access,
+TLS certificates or router forwarding. HTTPS requires valid TLS on your HA
+base URL. Client-supplied source URLs are not fetched by the export handler;
+it proxies only its own token-protected loopback transport.
+
+## Tests and privacy
 
 ```sh
-python3 scripts/check_privacy.py
+python -m pip install -r requirements-test.txt
+python -m pytest
+ruff check custom_components tests scripts/check_privacy.py
+ruff format --check custom_components tests scripts/check_privacy.py
+python scripts/check_privacy.py
 ```
 
-This check detects common accidental disclosures; it does not replace a
-manual review. Sensitive files are also excluded by `.gitignore`.
+Tests cover the native packet formats/CRC, cancellation and bounds, shared
+FFmpeg lifecycle, HA configuration/options, export authorization and token
+rotation. Synthetic FFmpeg smoke tests can run with `UBOX_TEST_FFMPEG=ffmpeg`.
+Automated tests do not connect to a real camera. The Python integration must
+still be tested on the target HA installation before replacing a working
+production receiver.
 
-## License and attribution
+A separate bounded hardware check of the Python receiver delivered 229 video
+units in a 20-second run, with 719 valid media CRCs and no mismatch. That check
+did not install the integration in HA and does not establish long-term or
+whole-installation reliability.
 
-MIT; see [LICENSE](LICENSE) and
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The receiver builds on the
-MIT-licensed `mahumadad/ubox-p4p` protocol work, with corrections informed by
-independent native-code analysis. Only implementation source, synthetic
-fixtures and documentation are distributed.
+The repository contains no personal camera names, deployment addresses,
+account/device credentials, recordings or captures. Test credentials and
+fixtures are synthetic. Vendor relay endpoints and the fixed legacy wire
+constant are protocol data. The one included PNG is an original, code-generated
+camera icon with no metadata or photographic content; its reviewed hash is
+checked by the privacy guard.
+
+See [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md) and
+[protocol notes](docs/PROTOCOL.md). This project is independent of UBox/Ubia.
+MIT licensing and upstream attribution are in [LICENSE](LICENSE) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Standalone Go receiver
+
+The root Go command remains available for the previously validated standalone
+workflow. Build with `go build -trimpath -o bin/ubox-relay-bridge .` and use
+`--native-handshake --config-root /config --entry-id REPLACE_WITH_ENTRY_ID`.
+It still expects an existing `ubox_p4p` config entry. See the original
+[go2rtc example](examples/go2rtc.example.yaml), which is separate from the
+HACS workflow described above. Offline Go checks: `go test -race ./...` and
+`go vet ./...`.

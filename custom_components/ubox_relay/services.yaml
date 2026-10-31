@@ -1,0 +1,22 @@
+get_stream_url:
+  fields:
+    entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: ubox_relay
+    base_url:
+      example: "http://homeassistant.example.invalid:8123"
+      selector:
+        text:
+rotate_stream_token:
+  fields:
+    entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: ubox_relay
+    base_url:
+      example: "http://homeassistant.example.invalid:8123"
+      selector:
+        text:

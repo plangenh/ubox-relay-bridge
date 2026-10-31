@@ -1,0 +1,74 @@
+{
+  "title": "UBox-Kamera",
+  "config": {
+    "step": {
+      "user": {
+        "title": "UBox-Kamera verbinden",
+        "description": "Gib die Geräte-Zugangsdaten ein. Die Einrichtung prüft die Eingaben lokal und weckt die Kamera nicht auf. Ein leeres Relay-Feld verwendet die automatische Auswahl.",
+        "data": {
+          "name": "Name",
+          "uid": "Kamera-UID",
+          "password": "Gerätepasswort",
+          "relay_host": "Relay-Host (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Gib einen Namen ein.",
+      "invalid_uid": "Die Kamera-UID muss 1–20 druckbare ASCII-Zeichen enthalten.",
+      "invalid_password": "Das Gerätepasswort muss 1–20 druckbare ASCII-Zeichen enthalten.",
+      "invalid_relay_host": "Gib einen Hostnamen oder eine IPv4-Adresse ein, optional mit Port (1–65535)."
+    },
+    "abort": {
+      "already_configured": "Diese Kamera ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kamera-Einstellungen",
+        "description": "Ein leeres Passwort behält das gespeicherte Passwort bei. Leere das Relay-Feld, um die automatische Auswahl zu verwenden.",
+        "data": {
+          "name": "Name",
+          "password": "Neues Gerätepasswort (optional)",
+          "relay_host": "Relay-Host (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Gib einen Namen ein.",
+      "invalid_password": "Das Gerätepasswort muss 1–20 druckbare ASCII-Zeichen enthalten.",
+      "invalid_relay_host": "Gib einen Hostnamen oder eine IPv4-Adresse ein, optional mit Port (1–65535)."
+    }
+  },
+  "services": {
+    "get_stream_url": {
+      "name": "Stream-URL anzeigen",
+      "description": "Erzeugt für Administratoren den geschützten MPEG-TS-Link zum Eintragen in go2rtc.",
+      "fields": {
+        "entry_id": {
+          "name": "Kamera",
+          "description": "Konfiguration der gewünschten UBox-Kamera."
+        },
+        "base_url": {
+          "name": "Home-Assistant-Basisadresse",
+          "description": "Optional: Home-Assistant-Adresse, die go2rtc erreichen kann, ohne Pfad."
+        }
+      }
+    },
+    "rotate_stream_token": {
+      "name": "Stream-Link erneuern",
+      "description": "Widerruft den alten Link, trennt aktive Export-Streams und liefert einen neuen Link. Danach die Quelle in go2rtc aktualisieren.",
+      "fields": {
+        "entry_id": {
+          "name": "Kamera",
+          "description": "Konfiguration der gewünschten UBox-Kamera."
+        },
+        "base_url": {
+          "name": "Home-Assistant-Basisadresse",
+          "description": "Optional: Home-Assistant-Adresse, die go2rtc erreichen kann, ohne Pfad."
+        }
+      }
+    }
+  }
+}

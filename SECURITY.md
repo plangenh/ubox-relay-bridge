@@ -1,7 +1,8 @@
 # Security and privacy
 
-This experimental receiver reads device credentials from a selected Home
-Assistant config entry. Give the process access only where required. Device
+The HACS integration stores device credentials in its Home Assistant config
+entry. The standalone receiver can read an existing config entry. Protect
+Home Assistant storage and backups. Give each process access only where required. Device
 credentials and account passwords must not be placed in command-line arguments,
 issues, workflow configuration or committed files.
 
@@ -21,3 +22,9 @@ For a vulnerability, use the repository's private vulnerability reporting
 facility if its owner has enabled it. Otherwise contact the maintainer through
 an available private channel. A public issue can request private contact
 without publishing exploit details or credentials.
+
+The exported stream URL contains a bearer token: anyone with that URL can view
+the camera. Keep it out of screenshots, logs and public go2rtc configuration.
+Only administrators can generate or rotate it using the integration actions.
+Rotating the token invalidates the old URL and disconnects active exports.
+Diagnostics deliberately omit device identifiers, credentials and stream URLs.
