@@ -44,7 +44,7 @@
       "invalid_relay_host": "Gib einen Hostnamen oder eine IPv4-Adresse ein, optional mit Port (1–65535).",
       "invalid_auth": "Die UBox-Anmeldung wurde abgelehnt. Prüfe die Kontodaten.",
       "cannot_connect": "UBox ist nicht erreichbar. Versuche es später erneut.",
-      "invalid_response": "UBox hat keine verwendbaren Kamera-Zugangsdaten geliefert.",
+      "invalid_response": "Die UBox-Antwort konnte nicht verarbeitet werden. Details stehen im Home-Assistant-Protokoll.",
       "challenge_required": "UBox verlangt eine zusätzliche Bestätigung. Melde dich zunächst in der UBox-App an oder verwende die manuelle Einrichtung.",
       "invalid_device": "Wähle eine Kamera aus der Liste aus."
     },

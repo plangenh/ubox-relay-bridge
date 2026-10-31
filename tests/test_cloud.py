@@ -227,3 +227,47 @@ async def test_untrusted_routing_never_receives_token(host):
     with pytest.raises(cloud.CloudResponseError):
         await cloud.async_discover_devices(session, "account@example.invalid", "secret")
     assert session.post.call_count == 1
+
+
+def test_regional_dns_name_is_normalized_to_https():
+    assert (
+        cloud._api_host({"svcloc": {"api_dn": "portal-us.ubianet.com"}})
+        == "https://portal-us.ubianet.com"
+    )
+
+
+@pytest.mark.parametrize(
+    "host",
+    [
+        "portal-us.ubianet.com\n",
+        "portal-us.ubianet.com\t",
+        "evil.example.invalid",
+        "//evil.example.invalid",
+    ],
+)
+def test_bare_host_validation_remains_strict(host):
+    with pytest.raises(cloud.CloudResponseError):
+        cloud._api_host({"svcloc": {"api_dn": host}})
+
+
+async def test_error_diagnostics_do_not_include_response_values(caplog):
+    session = session_for(
+        Response(
+            {
+                "code": 99999,
+                "data": {"Token": "private-token", "uuid": "private-identifier"},
+                "msg": "private-email-and-password",
+            }
+        )
+    )
+    with pytest.raises(cloud.CloudResponseError):
+        await cloud.async_discover_devices(session, "account@example.invalid", "secret")
+    assert "login" in caplog.text
+    assert "99999" in caplog.text
+    for secret in [
+        "private-token",
+        "private-identifier",
+        "private-email-and-password",
+        "account@example.invalid",
+    ]:
+        assert secret not in caplog.text

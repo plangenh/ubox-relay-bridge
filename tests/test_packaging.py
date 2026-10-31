@@ -11,7 +11,7 @@ def test_hacs_runtime_is_self_contained():
     assert manifest["domain"] == "ubox_relay"
     assert manifest["config_flow"] is True
     assert manifest["requirements"] == []
-    assert manifest["version"] == "0.2.0b1"
+    assert manifest["version"] == "0.2.0b2"
     assert set(manifest["dependencies"]) == {"ffmpeg", "stream"}
     assert json.loads((root / "hacs.json").read_text())["homeassistant"] == "2026.10.0"
     for filename in (

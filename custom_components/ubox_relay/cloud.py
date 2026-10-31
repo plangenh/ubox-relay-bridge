@@ -6,6 +6,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 from dataclasses import dataclass
 from urllib.parse import urlencode, urlsplit
 
@@ -16,6 +17,7 @@ _LOGIN_PATH = "/api/pub/account/login/v3"
 _DEVICES_PATH = "/api/user/qry/device/list/v2"
 _MAX_RESPONSE = 2 * 1024 * 1024
 _TIMEOUT = aiohttp.ClientTimeout(total=25, connect=10)
+_LOGGER = logging.getLogger(__name__)
 
 
 class CloudAuthError(Exception):
@@ -57,6 +59,7 @@ async def _post(
     *,
     base_url: str = _BASE_URL,
 ) -> dict:
+    stage = "login" if path == _LOGIN_PATH else "devices"
     try:
         async with session.post(
             base_url + path,
@@ -72,6 +75,9 @@ async def _post(
             if response.status >= 500:
                 raise CloudConnectionError from None
             if response.status != 200:
+                _LOGGER.warning(
+                    "UBox %s returned HTTP status %d", stage, response.status
+                )
                 raise CloudResponseError from None
             # A single read(n) may return a short network chunk before EOF.
             body = bytearray()
@@ -82,6 +88,7 @@ async def _post(
             try:
                 result = json.loads(body)
             except (ValueError, UnicodeError):
+                _LOGGER.warning("UBox %s returned an invalid JSON reply", stage)
                 raise CloudResponseError from None
     except (aiohttp.ClientError, TimeoutError, OSError):
         raise CloudConnectionError from None
@@ -89,13 +96,16 @@ async def _post(
         raise CloudResponseError
     code = result.get("code")
     if type(code) is not int:
+        _LOGGER.warning("UBox %s reply has no numeric API status", stage)
         raise CloudResponseError
     if code in {10004, 20005}:
         raise CloudAuthError
     if code != 0:
+        _LOGGER.warning("UBox %s returned unsupported API status %d", stage, code)
         raise CloudResponseError
     data = result.get("data")
     if not isinstance(data, dict):
+        _LOGGER.warning("UBox %s reply has an unexpected data structure", stage)
         raise CloudResponseError
     return data
 
@@ -111,6 +121,12 @@ def _api_host(login: dict) -> str:
     if host in (None, ""):
         return _BASE_URL
     if not isinstance(host, str):
+        raise CloudResponseError
+    # Accept a service-location DNS name as well as a base URL.
+    # Force HTTPS before applying the same strict vendor-host validation.
+    if "://" not in host:
+        host = "https://" + host
+    if any(ord(char) <= 32 or ord(char) == 127 for char in host):
         raise CloudResponseError
     try:
         parsed = urlsplit(host)
@@ -131,6 +147,7 @@ def _api_host(login: dict) -> str:
     except ValueError:
         raise CloudResponseError from None
     if not valid:
+        _LOGGER.warning("UBox login returned an unsupported regional API host")
         raise CloudResponseError
     return host.rstrip("/")
 
@@ -138,6 +155,7 @@ def _api_host(login: dict) -> str:
 def _devices(data: dict) -> list[CloudDevice]:
     infos = data.get("infos")
     if not isinstance(infos, list):
+        _LOGGER.warning("UBox devices reply has no camera information array")
         raise CloudResponseError
     devices: list[CloudDevice] = []
     seen: set[str] = set()
@@ -195,10 +213,12 @@ async def async_discover_devices(
     token = login.get("Token")
     user_id = login.get("uuid")
     if not isinstance(token, str) or not token or len(token) > 8192:
+        _LOGGER.warning("UBox login reply has no usable session token")
         raise CloudResponseError
     if any(ord(c) < 32 or ord(c) == 127 for c in token):
         raise CloudResponseError
     if not isinstance(user_id, str) or not user_id or len(user_id) > 256:
+        _LOGGER.warning("UBox login reply has no usable account identifier")
         raise CloudResponseError
     headers = {
         **headers,

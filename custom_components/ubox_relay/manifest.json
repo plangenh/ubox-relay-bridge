@@ -14,5 +14,5 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/plangenh/ubox-relay-bridge/issues",
   "requirements": [],
-  "version": "0.2.0b1"
+  "version": "0.2.0b2"
 }
