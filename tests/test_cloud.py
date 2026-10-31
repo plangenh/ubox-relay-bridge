@@ -209,12 +209,10 @@ async def test_regional_host_from_login_is_used():
 @pytest.mark.parametrize(
     "host",
     [
-        "http://portal-us.ubianet.com",
         "https://evil.example.invalid",
         "https://ubianet.com.evil.example.invalid",
         "https://user" + "@portal-us.ubianet.com",
         "https://portal-us.ubianet.com:8123",
-        "https://portal-us.ubianet.com/path",
         "https://portal-us.ubianet.com?token=value",
         "https://127.0.0.1",
         "https://[broken",
@@ -223,10 +221,19 @@ async def test_regional_host_from_login_is_used():
     ],
 )
 async def test_untrusted_routing_never_receives_token(host):
-    session = session_for(login(svcloc={"api_dn": host}))
-    with pytest.raises(cloud.CloudResponseError):
+    session = session_for(login(svcloc={"api_dn": host}), success({"infos": []}))
+    assert (
         await cloud.async_discover_devices(session, "account@example.invalid", "secret")
-    assert session.post.call_count == 1
+        == []
+    )
+    assert session.post.call_count == 2
+    assert (
+        session.post.call_args_list[1].args[0] == cloud._BASE_URL + cloud._DEVICES_PATH
+    )
+    assert (
+        session.post.call_args_list[1].kwargs["headers"]["X-Ubia-Auth-UserToken"]
+        == "synthetic-session-token"
+    )
 
 
 def test_regional_dns_name_is_normalized_to_https():
@@ -271,3 +278,33 @@ async def test_error_diagnostics_do_not_include_response_values(caplog):
         "account@example.invalid",
     ]:
         assert secret not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("http://portal-us.ubianet.com", "https://portal-us.ubianet.com"),
+        ("http://portal-us.ubianet.com:80/", "https://portal-us.ubianet.com"),
+        (
+            "https://portal-us.ubianet.com/service",
+            "https://portal-us.ubianet.com/service",
+        ),
+    ],
+)
+async def test_regional_http_is_upgraded_and_base_path_preserved(value, expected):
+    session = session_for(login(svcloc={"api_dn": value}), success({"infos": []}))
+    assert (
+        await cloud.async_discover_devices(session, "account@example.invalid", "secret")
+        == []
+    )
+    assert session.post.call_args_list[1].args[0] == expected + cloud._DEVICES_PATH
+    assert all(
+        call.args[0].startswith("https://") for call in session.post.call_args_list
+    )
+
+
+def test_http_userinfo_is_not_silently_accepted():
+    with pytest.raises(cloud.CloudResponseError):
+        cloud._api_host(
+            {"svcloc": {"api_dn": "http://user" + "@portal-us.ubianet.com"}}
+        )

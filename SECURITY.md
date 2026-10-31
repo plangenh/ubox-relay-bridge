@@ -34,3 +34,8 @@ Account passwords, password-derived login values, session tokens and full server
 responses must not be persisted in config entries, diagnostics, logs or fixtures.
 Device credentials from the selected camera remain sensitive stored configuration.
 The discovery client disables redirects and bounds response size and duration.
+
+Regional service-location hints are never followed as HTTP redirects. Standard
+vendor HTTP origins are upgraded to HTTPS, and validated vendor HTTPS base paths
+are supported. Unsupported hints fall back to the fixed verified login gateway;
+they never receive the account session token.

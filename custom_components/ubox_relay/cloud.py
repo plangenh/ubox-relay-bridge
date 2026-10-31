@@ -8,7 +8,7 @@ import hmac
 import json
 import logging
 from dataclasses import dataclass
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode, urlsplit, urlunsplit
 
 import aiohttp
 
@@ -130,17 +130,29 @@ def _api_host(login: dict) -> str:
         raise CloudResponseError
     try:
         parsed = urlsplit(host)
+        vendor = parsed.hostname is not None and (
+            parsed.hostname == "ubianet.com" or parsed.hostname.endswith(".ubianet.com")
+        )
+        # Older service-location values can advertise HTTP. Never send a token
+        # there: upgrade a standard vendor origin to verified HTTPS instead.
+        if (
+            parsed.scheme == "http"
+            and vendor
+            and parsed.port in (None, 80)
+            and parsed.username is None
+            and parsed.password is None
+        ):
+            host = urlunsplit(
+                ("https", parsed.hostname, parsed.path, parsed.query, parsed.fragment)
+            )
+            parsed = urlsplit(host)
         valid = (
             parsed.scheme == "https"
             and parsed.hostname is not None
-            and (
-                parsed.hostname == "ubianet.com"
-                or parsed.hostname.endswith(".ubianet.com")
-            )
+            and vendor
             and parsed.username is None
             and parsed.password is None
             and parsed.port in (None, 443)
-            and parsed.path in ("", "/")
             and not parsed.query
             and not parsed.fragment
         )
@@ -227,7 +239,15 @@ async def async_discover_devices(
         + "&"
         + urlencode({"uid": user_id, "lang": "en", "region": "US"}),
     }
-    devices = await _post(
-        session, _DEVICES_PATH, {}, headers, base_url=_api_host(login)
-    )
+    try:
+        base_url = _api_host(login)
+    except CloudResponseError:
+        # The verified login gateway already holds this session. An unsupported
+        # service-location hint must never route its token to an arbitrary host.
+        # Try the same official HTTPS gateway rather than failing discovery.
+        _LOGGER.warning(
+            "UBox regional routing unavailable; using verified login gateway"
+        )
+        base_url = _BASE_URL
+    devices = await _post(session, _DEVICES_PATH, {}, headers, base_url=base_url)
     return _devices(devices)

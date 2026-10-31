@@ -56,4 +56,7 @@ still requires a live user-owned account check.
 The native login success path updates the service host from `svcloc.api_dn`;
 outside China its default is `https://portal-uni.ubianet.com`. The integration
 restricts any returned host to the Ubia HTTPS domain and never follows redirects.
-A malformed or off-domain host is rejected before any session token is sent.
+Malformed or off-domain hints never receive session tokens. Unsupported hints
+fall back to the same verified HTTPS gateway used for login. Standard HTTP
+origins on the vendor domain are upgraded to HTTPS; vendor base paths are
+preserved. No token-bearing request uses plaintext HTTP.
